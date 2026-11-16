@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #efe9f7;
+      color: #2b2340;
+    }
+    .calc {
+      width: 100%;
+      max-width: 420px;
+      margin: 20px;
+      background: #fff;
+      border: 2px solid #5b3f9e;
+      border-radius: 12px;
+      padding: 28px;
+    }
+    h1 { margin: 0 0 18px; text-align: center; color: #5b3f9e; font-size: 1.6rem; }
+    label { display: block; margin: 14px 0 6px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.05rem;
+      border: 1px solid #b9aad6;
+      border-radius: 6px;
+      background: #fff;
+    }
+    input:focus, select:focus { outline: 2px solid #8d6fd6; border-color: #8d6fd6; }
+    .buttons { display: flex; gap: 10px; margin-top: 20px; }
+    button {
+      flex: 1;
+      padding: 11px;
+      border: 0;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #5b3f9e;
+      color: #fff;
+    }
+    button:hover { background: #46307d; }
+    button.secondary { background: #7c7790; }
+    .result {
+      margin-top: 22px;
+      padding: 14px;
+      border-radius: 8px;
+      background: #f4effc;
+      border-left: 6px solid #5b3f9e;
+      min-height: 3.2em;
+      font-size: 1.15rem;
+    }
+    .result.error { background: #fdeceb; border-left-color: #b3261e; color: #b3261e; }
+    .history { margin: 18px 0 0; padding-left: 20px; font-size: .95rem; color: #5a5470; }
+  </style>
+</head>
+<body>
+
+<main class="calc">
+  <h1>Simple Calculator</h1>
+
+  <form id="calcForm" novalidate>
+    <label for="num1">First number</label>
+    <input type="number" id="num1" step="any" placeholder="Enter a number">
+
+    <label for="op">Operation</label>
+    <select id="op">
+      <option value="+">Addition (+)</option>
+      <option value="-">Subtraction (−)</option>
+      <option value="*">Multiplication (×)</option>
+      <option value="/">Division (÷)</option>
+    </select>
+
+    <label for="num2">Second number</label>
+    <input type="number" id="num2" step="any" placeholder="Enter a number">
+
+    <div class="buttons">
+      <button type="submit">Calculate</button>
+      <button type="reset" class="secondary" id="clearBtn">Clear</button>
+    </div>
+  </form>
+
+  <div class="result" id="result" role="status" aria-live="polite">The result will appear here.</div>
+  <ol class="history" id="history" aria-label="Previous calculations"></ol>
+</main>
+
+<script>
+  const form = document.getElementById("calcForm");
+  const resultBox = document.getElementById("result");
+  const historyList = document.getElementById("history");
+  const symbols = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
+  function showError(message) {
+    resultBox.textContent = message;
+    resultBox.classList.add("error");
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const a = document.getElementById("num1").value;
+    const b = document.getElementById("num2").value;
+    const op = document.getElementById("op").value;
+
+    if (a === "" || b === "") {
+      showError("Please enter both numbers.");
+      return;
+    }
+
+    const x = parseFloat(a);
+    const y = parseFloat(b);
+    let answer;
+
+    switch (op) {
+      case "+": answer = x + y; break;
+      case "-": answer = x - y; break;
+      case "*": answer = x * y; break;
+      case "/":
+        if (y === 0) {
+          showError("Cannot divide by zero.");
+          return;
+        }
+        answer = x / y;
+        break;
+    }
+
+    // Round to avoid results such as 0.1 + 0.2 = 0.30000000000000004
+    answer = Math.round(answer * 1e10) / 1e10;
+
+    const line = `${x} ${symbols[op]} ${y} = ${answer}`;
+    resultBox.classList.remove("error");
+    resultBox.textContent = line;
+
+    const item = document.createElement("li");
+    item.textContent = line;
+    historyList.prepend(item);
+    while (historyList.children.length > 5) historyList.lastChild.remove();
+  });
+
+  document.getElementById("clearBtn").addEventListener("click", function () {
+    resultBox.classList.remove("error");
+    resultBox.textContent = "The result will appear here.";
+  });
+</script>
+
+</body>
+</html>
